@@ -1,6 +1,6 @@
 import numpy as np
 
-class loss():
+class losses():
   def __init__(self, y_true, y_pred):
     '''
     Initialize the loss function.
@@ -8,7 +8,6 @@ class loss():
       y_true: The true labels.
       y_pred: The predicted labels.
     '''
-    self.m = y_true.shape[0]
     self.y_true = y_true
     self.y_pred = y_pred
 
@@ -26,8 +25,18 @@ class loss():
     Compute the cross-entropy loss for multi-class classification.
     Output:
       The cross-entropy loss.
-    '''    
-    batch_size = self.y_pred.shape[0] 
-    correct_class_probs = self.y_pred[np.arange(batch_size), self.y_true]
+    '''
+    batch_size = self.y_pred.shape[0]
+
+    # Ensure y_true is an integer array of class indices
+    y_true = self.y_true.astype(int)
+
+    if y_true.ndim > 1:
+      y_true = np.argmax(y_true, axis=1)
+
+    correct_class_probs = self.y_pred[np.arange(batch_size), y_true]
     log_probs = np.log(correct_class_probs + 1e-15)
-    return -np.mean(log_probs)
+
+    log_probs = log_probs[:, np.newaxis]
+
+    return -np.mean(np.sum(self.y_true * log_probs, axis =1))
